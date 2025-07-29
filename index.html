@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Клиенты - Мультяшный 1С Стиль</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+        }
+        .login-container, .content-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border: 3px solid #ffd700;
+        }
+        h1 {
+            color: #2a5298;
+            text-shadow: 2px 2px #ffd700;
+            font-size: 2.5em;
+        }
+        .login-container input {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+            padding: 10px;
+            border: 2px solid #2a5298;
+            border-radius: 10px;
+            font-size: 1.2em;
+        }
+        .login-container button, .folder, .file, .back-btn {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .login-container button:hover, .folder:hover, .file:hover, .back-btn:hover {
+            background: #ffd700;
+            color: #2a5298;
+            transform: scale(1.1);
+        }
+        .folder, .file {
+            display: inline-block;
+            width: 200px;
+            margin: 10px;
+            text-align: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Форма входа -->
+        <div id="login" class="login-container">
+            <h1>Вход в систему</h1>
+            <input type="text" id="username" placeholder="Логин" required>
+            <input type="password" id="password" placeholder="Пароль" required>
+            <button onclick="login()">Войти</button>
+        </div>
+        <!-- Основной контент -->
+        <div id="content" class="content-container hidden">
+            <h1>Клиенты</h1>
+            <div id="folders"></div>
+            <button class="back-btn hidden" onclick="goBack()">Назад</button>
+        </div>
+    </div>
+
+    <script>
+        // Имитация базы данных пользователей
+        const users = {
+            'admin': 'password123',
+            'user1': 'client456'
+        };
+
+        // Структура папок (на основе Яндекс Диска)
+        const folderStructure = {
+            'root': [
+                { name: 'Клиенты', type: 'folder', contents: [
+                    { name: 'Клиент 1', type: 'folder', contents: [
+                        { name: 'Договор.pdf', type: 'file' },
+                        { name: 'Презентация.pptx', type: 'file' }
+                    ]},
+                    { name: 'Клиент 2', type: 'folder', contents: [
+                        { name: 'Счёт.xlsx', type: 'file' }
+                    ]}
+                ]},
+                { name: 'Архив', type: 'folder', contents: [] }
+            ]
+        };
+
+        let currentPath = ['root'];
+
+        // Функция входа
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (users[username] && users[username] === password) {
+                document.getElementById('login').classList.add('hidden');
+                document.getElementById('content').classList.remove('hidden');
+                displayFolders();
+            } else {
+                alert('Неверный логин или пароль!');
+            }
+        }
+
+        // Отображение папок и файлов
+        function displayFolders() {
+            const foldersDiv = document.getElementById('folders');
+            foldersDiv.innerHTML = '';
+            let currentFolder = folderStructure;
+            for (let path of currentPath) {
+                currentFolder = currentFolder[path] || currentFolder;
+                if (Array.isArray(currentFolder)) {
+                    currentFolder = currentFolder.find(item => item.name === path) || { contents: [] };
+                }
+            }
+            currentFolder.contents.forEach(item => {
+                const element = document.createElement('button');
+                element.className = item.type;
+                element.textContent = item.name;
+                if (item.type === 'folder') {
+                    element.onclick = () => {
+                        currentPath.push(item.name);
+                        displayFolders();
+                        document.querySelector('.back-btn').classList.remove('hidden');
+                    };
+                } else {
+                    element.onclick = () => alert(`Открыт файл: ${item.name}`);
+                }
+                foldersDiv.appendChild(element);
+            });
+        }
+
+        // Возврат на уровень выше
+        function goBack() {
+            if (currentPath.length > 1) {
+                currentPath.pop();
+                displayFolders();
+                if (currentPath.length === 1) {
+                    document.querySelector('.back-btn').classList.add('hidden');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
